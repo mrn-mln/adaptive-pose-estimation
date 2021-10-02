@@ -66,7 +66,7 @@ def inference(args):
     pose_estimator.load_model(args.detector_model_path, label_map)
     running_video = True
     frame_number = 0
-    start_time = time.perf_counter()
+    #start_time = time.perf_counter()
     times = []
     while input_cap.isOpened() and running_video:
         ret, cv_image = input_cap.read()
@@ -74,11 +74,20 @@ def inference(args):
             running_video = False
         if np.shape(cv_image) != ():
             out_frame = cv.resize(cv_image, (args.out_width, args.out_height))
+            start_time = time.perf_counter()
             preprocessed_image = pose_estimator.preprocess(cv_image)
+            finish_time = time.perf_counter()
+            print("preprocess image time = ", (finish_time - start_time) * 1000)
+            
             start_time = time.perf_counter()
             result_raw = pose_estimator.inference(preprocessed_image)
             finish_time = time.perf_counter()
+            print("Inference time = ", (finish_time - start_time) * 1000)
+            start_time = time.perf_counter()
             result = pose_estimator.post_process(*result_raw)
+            finish_time = time.perf_counter()
+            print("postprocess time = ", (finish_time - start_time) * 1000)
+            print("-----------------------------------------------")
             times.append(round(finish_time - start_time, 6))
             if result is not None:
                 out_frame = visualize_poses(out_frame, result, (detector_input_width, detector_input_height))
